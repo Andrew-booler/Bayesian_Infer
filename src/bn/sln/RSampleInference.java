@@ -3,6 +3,8 @@ package bn.sln;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -29,6 +31,13 @@ public class RSampleInference implements Inferencer {
 	@Override
 	public Distribution ask(BayesianNetwork bn, RandomVariable X, Assignment e) {
 		// TODO 自动生成的方法存根
+		Map<Object,Integer> assCounter= new HashMap<Object, Integer>();
+		for (Object val : X.getDomain()) {
+			assCounter.put(val, 0);
+		}
+		for(int j = 1; j<=N;j++) {
+			
+		}
 		return null;
 	}
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
