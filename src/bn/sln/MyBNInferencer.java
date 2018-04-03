@@ -1,5 +1,8 @@
 package bn.sln;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -12,6 +15,7 @@ import bn.core.BayesianNetwork;
 import bn.core.Distribution;
 import bn.core.RandomVariable;
 import bn.inference.Inferencer;
+import bn.parser.BIFParser;
 import bn.parser.XMLBIFParser;
 
 public class MyBNInferencer implements Inferencer {
@@ -61,8 +65,17 @@ public class MyBNInferencer implements Inferencer {
 		// TODO Auto-generated method stub
 		
 		// load bn xml
-		XMLBIFParser parser = new XMLBIFParser();
-		BayesianNetwork network = parser.readNetworkFromFile(args[0]);
+		
+		
+		BayesianNetwork network;
+		if(args[0].contains(".xml")) {
+			XMLBIFParser parser = new XMLBIFParser();
+			network = parser.readNetworkFromFile("src/bn/examples/"+args[0]);
+		}else {
+			File f= new File("src/bn/examples/"+args[0]);
+			BIFParser parser = new BIFParser(new FileInputStream(f));
+			network = parser.parseNetwork();
+		}
 		
 		// read in query variable X
 		RandomVariable X = network.getVariableByName(args[1]);
@@ -76,7 +89,7 @@ public class MyBNInferencer implements Inferencer {
 	    MyBNInferencer mbni = new MyBNInferencer();
 	    
 	    // solve
-	    mbni.ask(network, X, e);
+	    System.out.println(mbni.ask(network, X, e));
 	}
 
 }
