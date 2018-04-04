@@ -18,63 +18,66 @@ import bn.core.RandomVariable;
 import bn.inference.Inferencer;
 import bn.parser.BIFParser;
 import bn.parser.XMLBIFParser;
+import bn.util.Pair;
 
-public class RSampleInference implements Inferencer {
+public class LSampleInference implements Inferencer {
 	
 	private int N;
 	
-	public RSampleInference() {
+	public LSampleInference() {
 	}
 	
 	void setN(int n) {
 		this.N = n;
 	}
 	
-	public Assignment priorSample(BayesianNetwork bn) {
-		Assignment e = new Assignment();
+	Pair<Assignment, Double> weightedSample(BayesianNetwork bn, Assignment e) {
+		Assignment x = e.copy();
+		Double w = 1.0;
 		
 		// get all random variables in bn
 		List<RandomVariable> rvs = bn.getVariableListTopologicallySorted();
 		
 		for (RandomVariable rv : rvs) {
-			// generate a random variable between 0 and 1
-			Random random = new java.util.Random();
-			double randnum = random.nextDouble();
-			
-			Domain dm = rv.getDomain();
-			// for each value in RV's domain
-			for (Object val : dm) {	
-				e.set(rv, val);
-				randnum -= bn.getProb(rv, e);
-				if (randnum <= 0) {
-					break;
+			if (e.containsKey(rv)) {
+				w *= bn.getProb(rv, e);
+			} else {
+				// generate a random variable between 0 and 1
+				Random random = new java.util.Random();
+				double randnum = random.nextDouble();
+							
+				Domain dm = rv.getDomain();
+				// for each value in RV's domain
+				for (Object val : dm) {	
+					x.set(rv, val);
+					randnum -= bn.getProb(rv, x);
+					if (randnum <= 0) {
+						break;
+					}
 				}
 			}
 		}
 		
-		return e;
+		return new Pair<Assignment, Double>(x, w);
 	}
 	
 	@Override
 	public Distribution ask(BayesianNetwork bn, RandomVariable X, Assignment e) {
 
 		// store counts for each value
-		Distribution valueCnt = new Distribution();
+		Distribution W = new Distribution();
 		for (Object val : X.getDomain()) {
-			valueCnt.put(val, 0);
+			W.put(val, 0.0);
 		}
 		
 		for(int j = 1; j <= N; j++) {
-			Assignment eps = priorSample(bn);
-			// consistency test
-			if (eps.isConsistent(e)) {
-				valueCnt.put(eps.get(X), valueCnt.get(eps.get(X)) + 1);
-			}
+			Pair<Assignment, Double> ew = weightedSample(bn, e);
+			W.put(ew.getLeft().get(X), W.get(ew.getLeft().get(X)) + ew.getRight());
 		}
 		
-		valueCnt.normalize();
+		W.normalize();
 		
-		return valueCnt;
+		return W;
 		
 	}
 	
@@ -103,10 +106,10 @@ public class RSampleInference implements Inferencer {
 	    	e.set(network.getVariableByName(args[i]), args[i + 1]);
 	    }
 	    
-	    RSampleInference rsinfer = new RSampleInference();
-	    rsinfer.setN(N);
+	    LSampleInference lsinfer = new LSampleInference();
+	    lsinfer.setN(N);
 	    
 	    // solve
-	    System.out.println(rsinfer.ask(network, X, e));
+	    System.out.println(lsinfer.ask(network, X, e));
 	}
 }

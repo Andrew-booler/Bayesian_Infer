@@ -1,6 +1,5 @@
 package bn.sln;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -65,14 +64,12 @@ public class MyBNInferencer implements Inferencer {
 		// TODO Auto-generated method stub
 		
 		// load bn xml
-		
-		
-		BayesianNetwork network;
+		BayesianNetwork network = new BayesianNetwork();
 		if(args[0].contains(".xml")) {
 			XMLBIFParser parser = new XMLBIFParser();
-			network = parser.readNetworkFromFile("src/bn/examples/"+args[0]);
+			network = parser.readNetworkFromFile("src/bn/examples/" + args[0]);
 		}else {
-			File f= new File("src/bn/examples/"+args[0]);
+			File f= new File("src/bn/examples/" + args[0]);
 			BIFParser parser = new BIFParser(new FileInputStream(f));
 			network = parser.parseNetwork();
 		}

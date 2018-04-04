@@ -61,4 +61,16 @@ public class Assignment extends LinkedHashMap<RandomVariable,Object> {
 	}
 	return buf.toString();
     }
+    
+    public boolean isConsistent(Assignment e) {
+    	for (RandomVariable rv : e.keySet()) {
+    		if (this.containsKey(rv)) {
+    			if (!(this.get(rv).equals(e.get(rv)))) {
+    				return false;
+    			}
+    		}
+    	}
+    	
+    	return true;
+    } 
 }
